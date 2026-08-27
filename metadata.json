@@ -1,0 +1,6 @@
+{
+  "name": "Smart Transport Navigator",
+  "description": "Utilitarian and responsive public transit trip planner with real-time route optimization, live network telemetry, and pro traffic/weather disruption tracking.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
