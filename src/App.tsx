@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { TabType, TransportMode, ScheduleType, SortOption, RouteOption, SavedRoute } from './types';
 import { DEFAULT_ROUTES, SAVED_ROUTES } from './data/mockTransitData';
+import { computeClientTransitPlan } from './utils/clientTransitPlanner';
 import { GlobalNotificationBar, GlobalIncident } from './components/GlobalNotificationBar';
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -99,27 +100,18 @@ export default function App() {
         if (data.routes && data.routes.length > 0) {
           setRoutes(data.routes);
         } else {
-          setRoutes(DEFAULT_ROUTES);
+          const clientPlan = computeClientTransitPlan(planOrigin, planDest, planMode, sortBy, userLocation?.lat, userLocation?.lng);
+          setRoutes(clientPlan.routes);
         }
       } else {
-        // Fallback filter
-        let filtered = [...DEFAULT_ROUTES];
-        if (planMode === 'bus_only') {
-          filtered = DEFAULT_ROUTES.filter((r) => r.transportType === 'bus_only' || r.segments.some((s) => s.mode === 'bus'));
-        } else if (planMode === 'train_only') {
-          filtered = DEFAULT_ROUTES.filter((r) => r.transportType === 'train_only' || r.segments.some((s) => s.mode === 'train'));
-        }
-        setRoutes(filtered);
+        // Fallback to client-side dynamic route calculator
+        const clientPlan = computeClientTransitPlan(planOrigin, planDest, planMode, sortBy, userLocation?.lat, userLocation?.lng);
+        setRoutes(clientPlan.routes);
       }
     } catch (e) {
-      console.warn('Backend plan route fallback:', e);
-      let filtered = [...DEFAULT_ROUTES];
-      if (planMode === 'bus_only') {
-        filtered = DEFAULT_ROUTES.filter((r) => r.transportType === 'bus_only' || r.segments.some((s) => s.mode === 'bus'));
-      } else if (planMode === 'train_only') {
-        filtered = DEFAULT_ROUTES.filter((r) => r.transportType === 'train_only' || r.segments.some((s) => s.mode === 'train'));
-      }
-      setRoutes(filtered);
+      console.warn('Backend plan route fallback (e.g. Vercel static deployment):', e);
+      const clientPlan = computeClientTransitPlan(planOrigin, planDest, planMode, sortBy, userLocation?.lat, userLocation?.lng);
+      setRoutes(clientPlan.routes);
     } finally {
       setIsPlanning(false);
     }

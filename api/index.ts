@@ -21,9 +21,10 @@ app.use(express.json());
 
 // API routes for Weather, LTA DataMall, and OneMap
 app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'ok',
     service: 'Smart Transport Navigator Backend Engine (Vercel Serverless)',
