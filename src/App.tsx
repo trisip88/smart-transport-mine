@@ -66,9 +66,11 @@ export default function App() {
 
   // Swap origin and destination
   const handleSwapLocations = () => {
-    const temp = origin;
-    setOrigin(destination);
-    setDestination(temp);
+    const nextOrigin = destination;
+    const nextDest = origin;
+    setOrigin(nextOrigin);
+    setDestination(nextDest);
+    handlePlanRoute(nextOrigin, nextDest);
   };
 
   // Plan Route calculation calling backend API
@@ -255,6 +257,8 @@ export default function App() {
               destination={destination}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              isPlanning={isPlanning}
+              onRefresh={() => handlePlanRoute()}
             />
           </div>
         )}

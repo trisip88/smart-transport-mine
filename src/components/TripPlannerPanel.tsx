@@ -270,6 +270,12 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({
                 onOriginChange(e.target.value);
                 setShowOriginDropdown(true);
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setShowOriginDropdown(false);
+                  onPlanRoute();
+                }
+              }}
               onFocus={() => setShowOriginDropdown(true)}
             />
             {origin && (
@@ -353,6 +359,12 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({
                 onDestinationChange(e.target.value);
                 setShowDestDropdown(true);
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setShowDestDropdown(false);
+                  onPlanRoute();
+                }
+              }}
               onFocus={() => setShowDestDropdown(true)}
             />
             {destination && (
@@ -414,6 +426,27 @@ export const TripPlannerPanel: React.FC<TripPlannerPanelProps> = ({
         >
           <span className="material-symbols-outlined text-[18px]">swap_vert</span>
         </button>
+      </div>
+
+      {/* Quick Destination Pills */}
+      <div className="flex flex-wrap items-center gap-1.5 -mt-2">
+        <span className="text-[11px] font-medium text-[#727783] mr-0.5">Quick:</span>
+        {['Changi Airport T3', 'Marina Bay Sands', 'Orchard', 'Jurong East', 'Tampines'].map((destName) => (
+          <button
+            key={destName}
+            type="button"
+            onClick={() => {
+              onDestinationChange(destName);
+            }}
+            className={`text-[11px] font-medium px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              destination === destName
+                ? 'bg-[#004481] text-white border-[#004481]'
+                : 'bg-white text-[#414751] border-[#c1c6d3] hover:border-[#727783] hover:bg-[#f1ecf2]'
+            }`}
+          >
+            {destName.replace(' Terminal 3', ' T3')}
+          </button>
+        ))}
       </div>
 
       {/* Schedule & Timing Selection */}

@@ -8,6 +8,8 @@ interface SuggestedRoutesListProps {
   destination: string;
   sortBy: SortOption;
   onSortChange: (option: SortOption) => void;
+  isPlanning?: boolean;
+  onRefresh?: () => void;
 }
 
 export const SuggestedRoutesList: React.FC<SuggestedRoutesListProps> = ({
@@ -17,6 +19,8 @@ export const SuggestedRoutesList: React.FC<SuggestedRoutesListProps> = ({
   destination,
   sortBy,
   onSortChange,
+  isPlanning = false,
+  onRefresh,
 }) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
@@ -51,44 +55,107 @@ export const SuggestedRoutesList: React.FC<SuggestedRoutesListProps> = ({
           </p>
         </div>
 
-        <div className="relative">
-          <span className="text-sm text-[#727783]">
-            Sorted by:{' '}
+        <div className="flex items-center gap-2">
+          {onRefresh && (
             <button
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="text-[#1c1b1f] font-semibold cursor-pointer hover:text-[#004481] inline-flex items-center gap-0.5"
+              type="button"
+              onClick={onRefresh}
+              disabled={isPlanning}
+              title="Refresh routes"
+              className="p-1.5 rounded-lg border border-[#c1c6d3] bg-white text-[#414751] hover:text-[#004481] hover:border-[#004481] transition-colors cursor-pointer disabled:opacity-50"
             >
-              {sortLabels[sortBy]}
-              <span className="material-symbols-outlined text-[18px]">expand_more</span>
+              <span className={`material-symbols-outlined text-[18px] ${isPlanning ? 'animate-spin' : ''}`}>
+                refresh
+              </span>
             </button>
-          </span>
-
-          {showSortDropdown && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-[#c1c6d3] rounded-lg shadow-xl py-1 z-30 min-w-[160px] animate-in fade-in zoom-in-95 duration-100">
-              {(Object.keys(sortLabels) as SortOption[]).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    onSortChange(key);
-                    setShowSortDropdown(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-xs font-medium flex items-center justify-between hover:bg-[#f1ecf2] transition-colors ${
-                    sortBy === key ? 'text-[#004481] bg-[#d5e3ff]/30 font-bold' : 'text-[#1c1b1f]'
-                  }`}
-                >
-                  {sortLabels[key]}
-                  {sortBy === key && (
-                    <span className="material-symbols-outlined text-[16px] text-[#004481]">check</span>
-                  )}
-                </button>
-              ))}
-            </div>
           )}
+
+          <div className="relative">
+            <span className="text-sm text-[#727783]">
+              Sorted by:{' '}
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="text-[#1c1b1f] font-semibold cursor-pointer hover:text-[#004481] inline-flex items-center gap-0.5"
+              >
+                {sortLabels[sortBy]}
+                <span className="material-symbols-outlined text-[18px]">expand_more</span>
+              </button>
+            </span>
+
+            {showSortDropdown && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-[#c1c6d3] rounded-lg shadow-xl py-1 z-30 min-w-[160px] animate-in fade-in zoom-in-95 duration-100">
+                {(Object.keys(sortLabels) as SortOption[]).map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      onSortChange(key);
+                      setShowSortDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs font-medium flex items-center justify-between hover:bg-[#f1ecf2] transition-colors ${
+                      sortBy === key ? 'text-[#004481] bg-[#d5e3ff]/30 font-bold' : 'text-[#1c1b1f]'
+                    }`}
+                  >
+                    {sortLabels[key]}
+                    {sortBy === key && (
+                      <span className="material-symbols-outlined text-[16px] text-[#004481]">check</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Loading Skeletons */}
+      {isPlanning && (
+        <div className="flex flex-col gap-3 py-2 animate-in fade-in duration-200">
+          {[1, 2, 3].map((skeletonId) => (
+            <div
+              key={`skeleton-${skeletonId}`}
+              className="bg-white rounded-xl p-5 border border-[#c1c6d3]/60 flex flex-col gap-3 animate-pulse"
+            >
+              <div className="flex justify-between items-center">
+                <div className="h-7 bg-slate-200 rounded w-28"></div>
+                <div className="h-5 bg-slate-200 rounded w-16"></div>
+              </div>
+              <div className="flex gap-2">
+                <div className="h-6 bg-slate-200 rounded-md w-20"></div>
+                <div className="h-6 bg-slate-200 rounded-md w-24"></div>
+                <div className="h-6 bg-slate-200 rounded-md w-20"></div>
+              </div>
+              <div className="h-4 bg-slate-100 rounded w-48 mt-1"></div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isPlanning && sortedRoutes.length === 0 && (
+        <div className="bg-white rounded-2xl p-8 border border-[#c1c6d3] text-center flex flex-col items-center gap-3 my-4 shadow-xs">
+          <span className="p-3 bg-[#f1ecf2] text-[#414751] rounded-2xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-[36px]">directions</span>
+          </span>
+          <div>
+            <h3 className="font-bold text-base text-[#1c1b1f]">No Routes Found</h3>
+            <p className="text-xs text-[#727783] mt-1 max-w-sm">
+              We couldn't compute a direct itinerary between &quot;{origin}&quot; and &quot;{destination}&quot;. Try selecting another station or resetting preferences.
+            </p>
+          </div>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="mt-2 px-4 py-2 bg-[#004481] text-white text-xs font-semibold rounded-lg hover:bg-[#005baa] transition-colors cursor-pointer"
+            >
+              Recalculate Routes
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Routes List */}
-      <div className="flex flex-col gap-4">
+      {!isPlanning && sortedRoutes.length > 0 && (
+        <div className="flex flex-col gap-4">
         {sortedRoutes.map((route) => {
           const isOptimal = route.isOptimal;
 
@@ -219,7 +286,8 @@ export const SuggestedRoutesList: React.FC<SuggestedRoutesListProps> = ({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </section>
   );
 };
